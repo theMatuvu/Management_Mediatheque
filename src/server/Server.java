@@ -20,7 +20,17 @@ public class Server implements Runnable {
     public void run() {
         try {
             while(true){
-                new Thread(new Service(monServeur.accept())).start();
+                switch(socket.getPort()){
+                    case 3000:
+                        new Thread(new ServiceReservation(socket)).start();
+                        break;
+                    case 4000:
+                        new Thread(new ServiceEmprunt(socket)).start();
+                        break;
+                    case 5000:
+                        new Thread(new ServiceRetour(socket)).start();
+                        break;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
