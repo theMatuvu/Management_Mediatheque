@@ -1,14 +1,14 @@
 package server;
 
-import ressources.Abonne;
-import ressources.DVD;
-import ressources.Mediatheque;
+import ressources.*;
 
 import java.io.*;
 import java.net.Socket;
 
 public class ServiceEmprunt implements Runnable{
     private Socket socket;
+    private Abonne abonneEnCours;
+    private Document documentEnCours;
 
     public ServiceEmprunt(Socket accept) {
         socket = accept;
@@ -16,27 +16,42 @@ public class ServiceEmprunt implements Runnable{
 
     @Override
     public void run() {
-        try {
-            System.out.println("Connexion à ServiceEmprunt");
+            try {
+                System.out.println("Connexion à ServiceEmprunt");
+                BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
 
-            BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
+                socketOut.println("Veuillez renseigner votre numero");
+                String request = socketIn.readLine();
+                while (abonneEnCours == null) {
+                    abonneEnCours = Mediatheque.getInstance().getAbonne(Integer.parseInt(request));
+                    if (abonneEnCours == null) {
+                        socketOut.println("Abonné inconnu, veuillez réessayer");
+                        request = socketIn.readLine();
+                    } else
+                        socketOut.println("Abonné trouvé : " + abonneEnCours.getNom() + " Veuillez renseigner le numero du document à emprunter");
+                }
+                request = socketIn.readLine();
+                while (documentEnCours == null) {
+                    documentEnCours = Mediatheque.getInstance().getDocument(Integer.parseInt(request));
+                    if (documentEnCours == null) {
+                        socketOut.println("Document inconnu, veuillez réessayer");
+                        request = socketIn.readLine();
+                    }
+                }
+                try {
+                    documentEnCours.emprunt(abonneEnCours);
+                    socketOut.println("Emprunt confirmé : " + abonneEnCours.getNom() + " a emprunté " + documentEnCours);
 
-            String request = socketIn.readLine();
-            System.out.println("Requête reçue : " + request);
+                } catch (EmpruntException e) {
+                    socketOut.println("Erreur lors de l'emprunt : " + e.getMessage());
+                }
 
-            //Traitement de la requête a faire ici !!!!
-            int idDvd, idAbo;
+                socket.close();
 
-            Mediatheque mediatheque=  Mediatheque.getInstance();
-            //mediatheque.getDVD(idDvd).emprunt(mediatheque.getAbonne(idAbo));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-            socketOut.println("Retour confirmé : " + request);
-
-
-            socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

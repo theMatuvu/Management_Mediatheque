@@ -2,9 +2,9 @@ package ressources;
 
 public interface Document {
 
-    void reservation(Abonne ab) ;
-    void emprunt(Abonne ab) ;
-    void retour(Abonne ab);
+    void reservation(Abonne ab) throws ReservationException;
+    void emprunt(Abonne ab) throws EmpruntException;
+    void retour()throws RetourException;
 
-    int getNumero();
+
 }

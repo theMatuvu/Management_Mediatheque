@@ -3,18 +3,22 @@ package ressources;
 import server.BDController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Mediatheque {
     private static Mediatheque instance;
-    private List<Document> documents;
+    private HashMap<Integer, Document> documents;
     private List<Abonne> abonnes;
 
     private Mediatheque() {
-        documents = new ArrayList<>();
+        documents = new HashMap<>();
         abonnes = new ArrayList<>();
         BDController bd = new BDController();
-        documents.addAll(bd.getDVDs());
+        for (DVD dvd : bd.getDVDs()) {
+            documents.put(dvd.getNumero(), dvd);
+        }
         abonnes.addAll(bd.getAbonnes());
 
     }
@@ -26,8 +30,9 @@ public class Mediatheque {
     }
     public String toString() {
         StringBuilder sb = new StringBuilder("Documents : \n");
-        for (Document d : documents) {
-            sb.append(d.toString() + "\n");
+        for (Map.Entry<Integer, Document> entry : documents.entrySet()) {
+            sb.append("Document Number: ").append(entry.getKey()).append("\n");
+            sb.append("Document Details: ").append(entry.getValue().toString()).append("\n");
         }
         sb.append("Abonnes : \n");
         for (Abonne a : abonnes) {
@@ -36,14 +41,12 @@ public class Mediatheque {
         return sb.toString();
 
     }
+    public List<Document> getDocuments() {
+        return new ArrayList<>(documents.values());
+    }
 
-    public DVD getDVD(int numero) {
-        for (Document d : documents) {
-            if (d.getNumero() == numero) {
-                return (DVD) d;
-            }
-        }
-        return null;
+    public Document getDocument(int numero) {
+        return documents.get(numero);
     }
     public Abonne getAbonne(int numero) {
         for (Abonne a : abonnes) {

@@ -7,9 +7,11 @@ import java.net.Socket;
 public class Server implements Runnable {
     private Socket socket;
     private ServerSocket monServeur;
-    public Server(int PORT){
+    private Class<? extends Runnable> service;
+    public Server(int PORT, Class service) throws IOException {
         try {
             monServeur = new ServerSocket (PORT);
+            this.service = service;
         } catch (IOException e) {
             System.out.println("erreur lors de l'initialisation du serveur : "+ e);
         }
@@ -20,17 +22,9 @@ public class Server implements Runnable {
     public void run() {
         try {
             while(true){
-                switch(socket.getPort()){
-                    case 3000:
-                        new Thread(new ServiceReservation(socket)).start();
-                        break;
-                    case 4000:
-                        new Thread(new ServiceEmprunt(socket)).start();
-                        break;
-                    case 5000:
-                        new Thread(new ServiceRetour(socket)).start();
-                        break;
-                }
+                Socket socket = monServeur.accept();
+                new Thread(service.getConstructor(Socket.class).newInstance(socket)).start();
+                System.out.println("Connexion établie sur le port : " + monServeur.getLocalPort());
             }
         } catch (Exception e) {
             e.printStackTrace();

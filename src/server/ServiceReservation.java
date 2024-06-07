@@ -1,14 +1,14 @@
 package server;
 
-import ressources.Abonne;
-import ressources.DVD;
-import ressources.Mediatheque;
+import ressources.*;
 
 import java.io.*;
 import java.net.Socket;
 
 public class ServiceReservation implements Runnable{
     private Socket socket;
+    private Abonne abonneEnCours;
+    private Document documentEnCours;
 
     public ServiceReservation(Socket accept) {
         socket = accept;
@@ -21,18 +21,37 @@ public class ServiceReservation implements Runnable{
             BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
 
+            StringBuilder output = new StringBuilder("Catalogue des documents :\n");
+            for(Document d : Mediatheque.getInstance().getDocuments()){
+                output.append(d.toString()).append("\n");
+            }
+            output.append("\nVeuillez renseigner votre numero\n");
+            socketOut.println(output.toString().replaceAll("\n", "##"));
             String request = socketIn.readLine();
-            System.out.println("Requête reçue : " + request);
+            while (abonneEnCours == null) {
+                abonneEnCours = Mediatheque.getInstance().getAbonne(Integer.parseInt(request));
+                if (abonneEnCours == null) {
+                    socketOut.println("Abonné inconnu, veuillez réessayer");
+                    request = socketIn.readLine();
+                } else
+                    socketOut.println("Abonné trouvé : " + abonneEnCours.getNom() + " Veuillez renseigner le numero du document à emprunter");
+            }
+            request = socketIn.readLine();
+            while (documentEnCours == null) {
+                documentEnCours = Mediatheque.getInstance().getDocument(Integer.parseInt(request));
+                if (documentEnCours == null) {
+                    socketOut.println("Document inconnu, veuillez réessayer");
+                    request = socketIn.readLine();
+                }
+            }
+            try {
+                documentEnCours.reservation(abonneEnCours);
+                socketOut.println("Reservation confirmé : " + abonneEnCours.getNom() + " a reservé " + documentEnCours);
 
-            //Traitement de la requête a faire ici !!!!
-            int idDvd, idAbo;
-
-            Mediatheque mediatheque=  Mediatheque.getInstance();
-            //mediatheque.getDVD(idDvd).reservation(mediatheque.getAbonne(idAbo));
-
-            socketOut.println("Retour confirmé : " + request);
-
-
+            } catch (ReservationException e) {
+                socketOut.println("Erreur lors de la reservation : " + e.getMessage());
+            }
+            System.out.println("close session");
             socket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);

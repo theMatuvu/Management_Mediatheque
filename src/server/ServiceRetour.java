@@ -1,14 +1,13 @@
 package server;
 
-import ressources.Abonne;
-import ressources.DVD;
-import ressources.Mediatheque;
+import ressources.*;
 
 import java.io.*;
 import java.net.Socket;
 
 public class ServiceRetour implements Runnable{
     private Socket socket;
+    private Document documentEnCours;
 
     public ServiceRetour(Socket accept) {
         socket = accept;
@@ -21,18 +20,27 @@ public class ServiceRetour implements Runnable{
             BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
 
+
+            socketOut.println("Veuillez renseigner le numero du document à retourner");
             String request = socketIn.readLine();
-            System.out.println("Requête reçue : " + request);
+            while (documentEnCours == null) {
+                documentEnCours = Mediatheque.getInstance().getDocument(Integer.parseInt(request));
+                if (documentEnCours == null) {
+                    socketOut.println("Document inconnu, veuillez réessayer");
+                    request = socketIn.readLine();
+                }
 
-            //Traitement de la requête a faire ici !!!!
-            int idDvd, idAbo;
+            }
+            try {
+                documentEnCours.retour();
+                socketOut.println("Retour confirmé : " + documentEnCours + " a été retourné");
 
-            Mediatheque mediatheque=  Mediatheque.getInstance();
-            //mediatheque.getDVD(idDvd).retour(mediatheque.getAbonne(idAbo));
-
-            socketOut.println("Retour confirmé : " + request);
+            } catch (RetourException e) {
+                socketOut.println("Erreur lors du retour : " + e.getMessage());
+            }
 
             socket.close();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
