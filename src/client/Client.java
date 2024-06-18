@@ -15,8 +15,8 @@ public class Client {
     public static void main(String[] args) {
         try {
             Client client = new Client("localhost", 4000);
-            String message;
-            System.out.println(client.receiveMessage());
+            String message, serverMessage;
+            System.out.println(serverMessage=client.receiveMessage());
             while(true){
                 if(client.isSocketAlive()) {
 
@@ -27,11 +27,14 @@ public class Client {
                             client.close();
                             break;
                         }
-                        if(!client.isSocketAlive())
-                            break;
 
                         client.sendMessage(message);
-                        System.out.println(client.receiveMessage());
+                        if(!client.isSocketAlive()){
+                            System.out.println("Fermeture de la connexion");
+                            client.close();
+                            break;
+                        }
+                        System.out.println(serverMessage=client.receiveMessage());
 
                     }
                 }
@@ -56,6 +59,10 @@ public class Client {
 
     public String receiveMessage() throws IOException {
         String serverMessage = in.readLine().replaceAll("##", "\n");
+        if (serverMessage.contains("Fin Session")){
+            System.out.println("stooop de la connexion");
+            this.close();
+        }
         return serverMessage;
     }
 

@@ -1,6 +1,8 @@
 package ressources;
 
-import server.BDController;
+import ressources.Documents.DVD;
+import ressources.Documents.Document;
+import server.DataBase.BDController;
 
 import java.util.ArrayList;
 import java.util.HashMap;

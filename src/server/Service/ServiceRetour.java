@@ -1,6 +1,8 @@
-package server;
+package server.Service;
 
 import ressources.*;
+import ressources.Documents.Document;
+import ressources.Documents.RetourException;
 
 import java.io.*;
 import java.net.Socket;

@@ -1,6 +1,7 @@
-package ressources;
+package ressources.Documents;
 
-import java.text.DateFormat;
+import ressources.Abonne;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -22,64 +23,70 @@ public class DVD implements Document {
 
 
     @Override
-    public synchronized void reservation(Abonne ab) throws ReservationException{
-        if(DateReservation > System.currentTimeMillis()){
-            DateReservation = 0;
-            abonne = null;
-        }
-        Period periode = Period.between(ab.getDateNaissance().toLocalDate(),  LocalDate.now());
-        int age = periode.getYears();
-        if(adulte && (age) < 18){
-            System.out.println("DVD adulte, abonné mineur");
-            throw new ReservationException("DVD adulte, abonné mineur");
-        }
+    public void reservation(Abonne ab) throws ReservationException{
+        synchronized (this) {
+            if(DateReservation > System.currentTimeMillis()){
+                DateReservation = 0;
+                abonne = null;
+            }
+            Period periode = Period.between(ab.getDateNaissance().toLocalDate(),  LocalDate.now());
+            int age = periode.getYears();
+            if(adulte && (age) < 18){
+                System.out.println("DVD adulte, abonné mineur");
+                throw new ReservationException("DVD adulte, abonné mineur");
+            }
 
-        if (DateReservation!=0)
-            throw new ReservationException("DVD déjà réservé jusqu'a " + DateReservation);
-        if(emprunte)
-            throw new ReservationException("DVD déjà emprunté");
-        else{
-            DateReservation = System.currentTimeMillis() + 5400000 ;
-            abonne = ab;
+            if (DateReservation!=0)
+                throw new ReservationException("DVD déjà réservé jusqu'a " + DateReservation);
+            if(emprunte)
+                throw new ReservationException("DVD déjà emprunté");
+            else{
+                DateReservation = System.currentTimeMillis() + 5400000 ;
+                abonne = ab;
+            }
         }
 
     }
 
     @Override
-    public synchronized void emprunt(Abonne ab) throws EmpruntException {
+    public void emprunt(Abonne ab) throws EmpruntException {
         //gerer date de naissance si adulte
-        Period periode = Period.between(ab.getDateNaissance().toLocalDate(),  LocalDate.now());
-        int age = periode.getYears();
-        if(adulte && (age) < 18){
-            System.out.println("DVD adulte, abonné mineur");
-            throw new EmpruntException("DVD adulte, abonné mineur");
-        }
-        if(!(DateReservation==0) && !emprunte){
-            emprunte = true;
-            DateReservation = 0;
-            abonne = ab;
-        }
-        else if(!emprunte && (DateReservation==0) && abonne.equals(ab)){
-            emprunte = true;
-        }
-        else{
-            System.out.println("DVD réservé ou déjà emprunté");
-            throw new EmpruntException("DVD réservé ou déjà emprunté");
+        synchronized (this) {
+            Period periode = Period.between(ab.getDateNaissance().toLocalDate(),  LocalDate.now());
+            int age = periode.getYears();
+            if(adulte && (age) < 18){
+                System.out.println("DVD adulte, abonné mineur");
+                throw new EmpruntException("DVD adulte, abonné mineur");
+            }
+            if(!(DateReservation==0) && !emprunte){
+                emprunte = true;
+                DateReservation = 0;
+                abonne = ab;
+            }
+            else if(!emprunte && (DateReservation==0) && abonne.equals(ab)){
+                emprunte = true;
+            }
+            else{
+                System.out.println("DVD réservé ou déjà emprunté");
+                throw new EmpruntException("DVD réservé ou déjà emprunté");
+            }
         }
 
     }
 
     @Override
-    public synchronized void retour() throws RetourException {
-        if(emprunte){
-            DateReservation = 0;
-            emprunte = false;
-            abonne = null;
-        }
-        else{
-            System.out.println("DVD non emprunté");
-            throw new RetourException("DVD non emprunté");
+    public void retour() throws RetourException {
+        synchronized (this) {
+            if(emprunte){
+                DateReservation = 0;
+                emprunte = false;
+                abonne = null;
+            }
+            else{
+                System.out.println("DVD non emprunté");
+                throw new RetourException("DVD non emprunté");
 
+            }
         }
 
     }

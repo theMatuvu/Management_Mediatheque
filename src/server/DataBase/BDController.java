@@ -1,7 +1,7 @@
-package server;
+package server.DataBase;
 
 import ressources.Abonne;
-import ressources.DVD;
+import ressources.Documents.DVD;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

@@ -1,4 +1,4 @@
-package ressources;
+package ressources.Documents;
 
 public class ReservationException extends Exception {
 

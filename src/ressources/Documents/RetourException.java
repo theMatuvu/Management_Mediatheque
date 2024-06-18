@@ -1,4 +1,4 @@
-package ressources;
+package ressources.Documents;
 
 public class RetourException extends Exception {
     public RetourException(String message) {

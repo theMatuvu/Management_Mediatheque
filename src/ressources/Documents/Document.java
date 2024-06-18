@@ -1,4 +1,6 @@
-package ressources;
+package ressources.Documents;
+
+import ressources.Abonne;
 
 public interface Document {
 
