@@ -33,10 +33,10 @@ public class ServiceRetour implements Runnable{
             }
             try {
                 documentEnCours.retour();
-                socketOut.println("Retour confirmé : " + documentEnCours + " a été retourné");
+                socketOut.println("Retour confirmé : " + documentEnCours + " a été retourné" + " ##Fin Session");
 
             } catch (RetourException e) {
-                socketOut.println("Erreur lors du retour : " + e.getMessage());
+                socketOut.println("Erreur lors du retour : " + e.getMessage() + " ##Fin Session");
             }
 
             socket.close();

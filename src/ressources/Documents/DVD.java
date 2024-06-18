@@ -27,10 +27,16 @@ public class DVD implements Document {
             DateReservation = 0;
             abonne = null;
         }
+        Period periode = Period.between(ab.getDateNaissance().toLocalDate(),  LocalDate.now());
+        int age = periode.getYears();
+        if(adulte && (age) < 18){
+            System.out.println("DVD adulte, abonné mineur");
+            throw new ReservationException("DVD adulte, abonné mineur");
+        }
 
         if (DateReservation!=0)
             throw new ReservationException("DVD déjà réservé jusqu'a " + DateReservation);
-        if(!emprunte)
+        if(emprunte)
             throw new ReservationException("DVD déjà emprunté");
         else{
             DateReservation = System.currentTimeMillis() + 5400000 ;
